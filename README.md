@@ -48,7 +48,7 @@ A modern web application for managing student information with features like sec
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/Student_Management_System.git
+git clone https://github.com/Bhavish4/Student-Management-System.git
 ```
 
 2. Set up Firebase:
@@ -62,7 +62,7 @@ git clone https://github.com/yourusername/Student_Management_System.git
    - Configure Firestore security rules
 
 4. Run the application:
-   - Open `index.html` in your web browser
+   - Open `landing.html` in your web browser
    - Or use a local development server
 
 ## 📁 Project Structure
@@ -140,7 +140,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Authors
 
-- Your Name - Initial work - [YourGitHub](https://github.com/yourusername)
+- Ponugumatla Bhavish - Initial work - [YourGitHub](https://github.com/Bhavish4)
 
 ## 🙏 Acknowledgments
 
@@ -151,8 +151,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-For support, email your-email@example.com or open an issue in the repository.
+For support, email bunnylucky0422@gmail.com or open an issue in the repository.
 
 ---
 
-Made with ❤️ by [Your Name]
+Made with ❤️ by Bhavish.
