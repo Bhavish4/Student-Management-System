@@ -140,7 +140,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Authors
 
-- Ponugumatla Bhavish - Initial work - [YourGitHub](https://github.com/Bhavish4)
+- Ponugumatla Bhavish - Initial work - [Profile](https://github.com/Bhavish4)
 
 ## 🙏 Acknowledgments
 
