@@ -197,11 +197,10 @@ const firebaseConfig = {
 
 ### Contact Support
 For technical support:
-- Email: support@example.com
-- Phone: +1 (555) 123-4567
+- Email: bunnylucky0422@gmail.com
 - Hours: Monday-Friday, 9 AM - 5 PM
 
 ---
 
-*Last Updated: [Current Date]*
+*Last Updated: 14-April-2025*
 *Version: 1.0* 
