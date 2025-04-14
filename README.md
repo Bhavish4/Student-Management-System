@@ -6,9 +6,8 @@ A modern web application for managing student information with features like sec
 ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat&logo=firebase&logoColor=black)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white&style=for-the-badge)
-![Auth0](https://img.shields.io/badge/Auth0-EB5424?style=for-the-badge&logo=auth0&logoColor=white)
-![License](https://img.shields.io/github/license/username/repo?style=flat)
 ![Responsive](https://img.shields.io/badge/Responsive-Yes-brightgreen?style=for-the-badge)
+![License](https://img.shields.io/github/license/Bhavish4/Student-Management-System?style=for-the-badge)
 
 
 
