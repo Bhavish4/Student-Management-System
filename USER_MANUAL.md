@@ -66,8 +66,8 @@ const firebaseConfig = {
 1. Open the application by navigating to `index.html`
 2. Click on "Login" in the navigation menu
 3. Use the default admin credentials:
-   - Email: admin@admin.com
-   - Password: admin@123
+   - Email: bunny@sms.edu.in
+   - Password: B@Admin#2025!
 4. After successful login, you will be redirected to `overview.html`
 5. Change the default password after first login
 
