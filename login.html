@@ -889,263 +889,43 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase and Auth Scripts -->
     <script type="module">
-        // Import Firebase modules and configuration
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, setPersistence, browserLocalPersistence, browserSessionPersistence, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
-        import { firebaseConfig } from './firebase-config.js';
-        import { errorTracker, csrfProtection } from './utils/security.js';
+        import { loginUser, signUpUser, initAuthStateObserver } from './auth.js';
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-
-        // Set up rate limiting
-        let loginAttempts = 0;
-        const MAX_LOGIN_ATTEMPTS = 5;
-        const LOCKOUT_DURATION = 5 * 60 * 1000; // 5 minutes
-        let lastAttemptTime = 0;
-
-        // DOM Elements
-        const loginForm = document.getElementById('loginForm');
-        const errorMessage = document.getElementById('errorMessage');
-        const loginButton = document.getElementById('loginButton');
-        const togglePassword = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('password');
-        const forgotPassword = document.getElementById('forgotPassword');
-        const forgotPasswordModal = document.getElementById('forgotPasswordModal');
-        const resetPasswordForm = document.getElementById('resetPasswordForm');
-        const resetErrorMessage = document.getElementById('resetErrorMessage');
-        const closeModal = document.getElementById('closeModal');
-        const resetSuccessMessage = document.getElementById('resetSuccessMessage');
-
-        // Add CSRF token to form
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = 'csrf_token';
-        csrfInput.value = csrfProtection.getCsrfToken();
-        loginForm.appendChild(csrfInput);
-
-        // Form validation
-        function validateForm(email, password) {
-            if (!email || !password) {
-                throw new Error('Please fill in all fields');
+        // Initialize auth state observer
+        initAuthStateObserver((user) => {
+            if (user) {
+                // User is signed in, redirect to dashboard
+                window.location.href = 'dashboard.html';
             }
-
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                throw new Error('Invalid email format');
-            }
-
-            if (password.length < 6) {
-                throw new Error('Password must be at least 6 characters');
-            }
-        }
-
-        // Check rate limiting
-        function checkRateLimit() {
-            const now = Date.now();
-            if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
-                if (now - lastAttemptTime < LOCKOUT_DURATION) {
-                    throw new Error(`Too many failed attempts. Please try again in ${Math.ceil((LOCKOUT_DURATION - (now - lastAttemptTime)) / 60000)} minutes`);
-                } else {
-                    loginAttempts = 0;
-                }
-            }
-            lastAttemptTime = now;
-        }
-
-        // Toggle Password Visibility
-        togglePassword.addEventListener('click', function() {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            
-            // Toggle eye icon
-            this.classList.toggle('fa-eye');
-            this.classList.toggle('fa-eye-slash');
-            
-            // Update ARIA attributes for accessibility
-            const isPressed = type === 'text';
-            this.setAttribute('aria-pressed', isPressed);
-            this.setAttribute('aria-label', isPressed ? 'Hide password' : 'Show password');
-            
-            passwordInput.focus();
         });
 
-        // Handle Login Form Submission
-        loginForm.addEventListener('submit', async function(e) {
+        // Handle login form submission
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const email = document.getElementById('email').value.trim();
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const remember = document.getElementById('remember').checked;
 
-            // Show loading state
-            loginButton.classList.add('loading');
-            errorMessage.classList.remove('show');
-
-            try {
-                // Validate CSRF token
-                const formData = new FormData(loginForm);
-                const csrfToken = formData.get('csrf_token');
-                if (!csrfProtection.validateToken(csrfToken)) {
-                    throw new Error('Invalid CSRF token');
-                }
-
-                // Validate form
-                validateForm(email, password);
-                
-                // Check rate limiting
-                checkRateLimit();
-
-                // Set persistence before sign in
-                await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
-
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                // Reset login attempts on success
-                loginAttempts = 0;
-
-                // Log successful login
-                errorTracker.logError('Login successful', { email, timestamp: new Date().toISOString() });
-
-                // Redirect to dashboard
-                window.location.href = 'overview.html#dashboard';
-            } catch (error) {
-                // Increment login attempts on failure
-                loginAttempts++;
-
-                // Log error with context
-                errorTracker.logError(error, {
-                    email,
-                    loginAttempts,
-                    timestamp: new Date().toISOString()
-                });
-
-                // Handle errors
-                let errorMsg = '';
-                switch (error.code || error.message) {
-                    case 'auth/invalid-email':
-                    case 'Invalid email format':
-                        errorMsg = 'Invalid email format.';
-                        break;
-                    case 'auth/user-disabled':
-                        errorMsg = 'This account has been disabled.';
-                        break;
-                    case 'auth/user-not-found':
-                        errorMsg = 'No account found with this email.';
-                        break;
-                    case 'auth/wrong-password':
-                        errorMsg = 'Incorrect password.';
-                        break;
-                    case 'auth/too-many-requests':
-                        errorMsg = 'Too many failed attempts. Please try again later.';
-                        break;
-                    case 'Please fill in all fields':
-                        errorMsg = 'Please fill in all fields.';
-                        break;
-                    case 'Password must be at least 6 characters':
-                        errorMsg = 'Password must be at least 6 characters.';
-                        break;
-                    case 'Invalid CSRF token':
-                        errorMsg = 'Security validation failed. Please refresh the page and try again.';
-                        break;
-                    default:
-                        errorMsg = error.message || 'Login failed. Please try again.';
-                }
-                
-                errorMessage.textContent = errorMsg;
-                errorMessage.classList.add('show');
-                errorMessage.setAttribute('role', 'alert');
-            } finally {
-                loginButton.classList.remove('loading');
+            const result = await loginUser(email, password);
+            if (result.success) {
+                window.location.href = 'dashboard.html';
+            } else {
+                alert(result.error);
             }
         });
 
-        // Forgot Password Modal
-        forgotPassword.addEventListener('click', function(e) {
+        // Handle signup form submission
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            forgotPasswordModal.style.display = 'flex';
-            document.getElementById('resetEmail').focus();
-        });
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
 
-        closeModal.addEventListener('click', function() {
-            forgotPasswordModal.style.display = 'none';
-            resetErrorMessage.style.display = 'none';
-            resetSuccessMessage.style.display = 'none';
-        });
-
-        window.addEventListener('click', function(e) {
-            if (e.target === forgotPasswordModal) {
-                forgotPasswordModal.style.display = 'none';
-                resetErrorMessage.style.display = 'none';
-                resetSuccessMessage.style.display = 'none';
-            }
-        });
-
-        // Handle password reset
-        resetPasswordForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('resetEmail').value.trim();
-            resetErrorMessage.style.display = 'none';
-            resetSuccessMessage.style.display = 'none';
-
-            try {
-                // Validate email
-                if (!email) {
-                    throw new Error('Please enter your email address');
-                }
-
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(email)) {
-                    throw new Error('Invalid email format');
-                }
-
-                // Check if email exists in Firebase
-                try {
-                    const methods = await fetchSignInMethodsForEmail(auth, email);
-                    if (methods.length === 0) {
-                        throw new Error('No account found with this email address');
-                    }
-                } catch (error) {
-                    if (error.message === 'No account found with this email address') {
-                        throw error;
-                    }
-                    throw new Error('Failed to verify email. Please try again.');
-                }
-
-                // Send password reset email
-                await sendPasswordResetEmail(auth, email);
-                
-                // Show success message
-                resetSuccessMessage.textContent = 'Password reset email sent! Check your inbox.';
-                resetSuccessMessage.style.display = 'block';
-                
-                // Clear form
-                resetPasswordForm.reset();
-                
-                // Close modal after 3 seconds
-                setTimeout(() => {
-                    forgotPasswordModal.style.display = 'none';
-                    resetSuccessMessage.style.display = 'none';
-                }, 3000);
-            } catch (error) {
-                // Show error message
-                resetErrorMessage.textContent = error.message || 'Failed to send reset email. Please try again.';
-                resetErrorMessage.style.display = 'block';
-            }
-        });
-
-        // Handle keyboard navigation in modal
-        forgotPasswordModal.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                forgotPasswordModal.style.display = 'none';
-                resetErrorMessage.style.display = 'none';
-                resetSuccessMessage.style.display = 'none';
+            const result = await signUpUser(email, password);
+            if (result.success) {
+                window.location.href = 'dashboard.html';
+            } else {
+                alert(result.error);
             }
         });
     </script>
